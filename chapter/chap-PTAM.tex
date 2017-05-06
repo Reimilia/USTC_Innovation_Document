@@ -1,0 +1,99 @@
+
+\def \R2{\mathbb{R}^2}
+\def \R3{\mathbb{R}^3}
+\def \Rn{\mathbb{R}^n}
+
+\def \itW{\mathit{W}}
+
+\def \itK{\mathit{K}}
+\def \bfp{\mathbf{p}}
+
+\chapter{基于单目相机的3维实时重建的PTAM算法介绍}
+
+\section{数学知识介绍}
+
+\section{PTAM算法的介绍}
+关键词，双管线系统，为后面的算法奠定了基础
+
+\section{PTAM算法的数学推导}
+我们首先简述PTAM实现单目相机SLAM的原理。单目相机模型不同于双目相机，实时追踪时相机视界中的点不能和其它相机视界中的点进行匹配，只能和自己的关键帧匹配，从而加大了3D重建中定位的难度。PTAM算法提出利用单目相机实时追踪特征点的可行性，实现三维重建。
+
+\subsection{PTAM算法工作的基本流程}
+PTAM算法主要思想是将Tracking和Mapping两个过程放在不同的管线(进程)中进行: Tracking 进程专门实现相机位置的估计，Mapping 进程则用于进行关键帧之间的误差消除。
+
+如果记$\itW$为真实世界的坐标系，PTAM算法将维护一个关键帧集合: $Img=\{I_1,I_2,\ldots,I_m\}$，这\(m\)个关键帧分别对应\(m\)个相机坐标系 $\itK_i$。我们用 $E_{\itK_i\itW}$ 表示从世界坐标系到相机坐标系的仿射变换(Affine Transformation)。
+
+\subsection{PTAM管线之一: Tracking}
+
+%
+% Todo: 插入一张流程图
+%
+追踪进程需要解决如下的问题：
+
+当读入了新的关键帧之后，原来算法在重建过程中提取的3维空间中的特征点现在在照片中的坐标是什么？现在的相机姿态应该怎么估计？ 
+
+我们假定程序可以从映射进程得到一个关键帧集合 $Img$ 以及3维重建的特征点的坐标集合(相对于世界坐标系)$P=P_\itW=\{\bfp_{1\itW},\ldots,\bfp_{s\itW}\}$，为了统一形式，将第$j$个点坐标记为 $\bfp_{j\itW}= (p_{jx},p_{jy},p_{jz},1)$。
+
+根据已知结论，仿射坐标系变换对应公式为
+
+\begin{equation}
+\bfp_{jK_{t+1}}= E_{K_{t+1}\itW} \bfp_{j\itW}
+\end{equation}
+
+为了把三维空间中的视界投影到二维空间，算法遵循\citep{deng:01a}中的FOV相机模型，构建一个$\mathbb{R}^3$到 $\mathbb{R}^2$ 的映射为:
+
+\begin{equation}
+\label{eq:FOV}
+f(x,y,z,1)=(u_0,v_0) + (x/z,y/z) 
+\begin{bmatrix}
+       f_u  & 0 \\
+       0 & f_v  \\
+\end{bmatrix} \frac{r'}{r}
+\end{equation}
+\begin{equation}
+r= \sqrt{\frac{x^2+y^2}{z^2}}
+\end{equation}
+
+\begin{equation}
+r'= \frac{1}{\omega} arctan(2rtan\frac{\omega}{2})
+\end{equation}
+
+其中我们假定焦距$f_u,f_v$，主点位置$(u_0,v_0)$和畸变系数$\omega$已知。这时对于实时相机姿态的更新，相当于对于 \autoref{eq:FOV} 求微分，在假定线性运动的情况下更新相机姿态的变换仿射矩阵。若我们设从上一关键帧到下一个关键帧的仿射变换矩阵为$T$，则有以下的关系成立:
+
+\begin{equation}
+E_{K_{t+1}\itW}}  = T E_{K_{t}\itW}} = exp(\mu) E_{K_{t}\itW}}
+\end{equation}
+
+其中$\mu$为6维向量，代表矩阵 $T$的6个自由度。所以问题转化为: 根据图像中特征点$(u,v)$的变化和在每个特征点三维空间中的预估位置，求解$\mu,T$的取值。
+
+
+\subsubsection{关键特征点的投影和配对}
+
+
+我们假定点$p$为我们需要定位的特征点，则我们首先需要在当前的关键帧图像中找到该点的新投影坐标$(\hat{u},\hat{v})$。为此，我们构造图像的尺度空间，利用 %\citep{}
+的FAST计算角点的方法提取可能的特征点。在假定相机移动很慢的情况下，特征点匹配算法从上一帧的位置开始，在一定的半径阈值内，在对应的视界空间上进行搜索。
+
+
+
+
+
+
+
+\subsubsection{相机模型参数的求解和位置的更新}
+
+
+为了保证算法的稳定性，追踪进程会进行两次：第一次会从三维模型中抽取50个特征点投影匹配，第二次则抽取1000个特征点进行匹配。
+
+
+\subsection{PTAM管线之二: Mapping}
+
+\subsubsection{关键帧的选择和插入}
+
+\subsubsection{利用Bundle Adjustment极小化误差}
+
+
+\section{PTAM算法的实际应用}
+\subsection{在一般电脑上运行}
+\subsection{在智能手机上运行}
+
+\section{PTAM算法的评价}
