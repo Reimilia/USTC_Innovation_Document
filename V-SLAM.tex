@@ -37,25 +37,28 @@ V-SLAM 技术指的是使用图像作为外部信息的唯一来源，来定位�
 
 \subsubsection{V-SLAM的基本原理}
 V-SLAM技术根据拍摄的视频、图像信息推断摄像头在环境的方位，同时构建环境地图，其原理为多视图几何原理(\textbf{Multiple view geometry theroy}) V-SLAM的目标为同时恢复出每帧图像对应的相机运动参数$C_1$,$C_2$ … $C_m$以及场景三维结构$X_1$,$X_2$ … $X_n$,每个相机运动参数$C_i$包含了相机的位置和朝向信息，通常表达为一个 3$\times$3的旋转矩阵$R_i$和一个三维位置变量 $p_i$。$R_i$与$p_i$将一个世界坐标系下的三维点$X_j$变换至$C_i$的局部坐标系
-\begin{equation} \label{X1}
+\begin{equation}\label{EQ1}
 {(X_{ij},Y_{ij},Z_{ij})}^\mathrm{T}=R_{i}(X_{j}-p_{i})
 \end{equation}
 进而投影至图像中
-\begin{equation} \label{X2}
-h_ij={(f_{x}X_{ij}/Z_{ij}+c_{x}.f_{y}Y_{ij}/Z_{ij}+c_{y})}^\mathrm{T}
+\begin{equation}\label{EQ2}
+h_{ij}={(f_{x}X_{ij}/Z_{ij}+c_{x}.f_{y}Y_{ij}/Z_{ij}+c_{y})}^\mathrm{T}
 \end{equation}
 其中，$f_x$,$f_y$分别为沿图像$x$,$y$轴的图像焦距,$(c_x,c_y)$为镜头光心在图像中的位置，通常假设这些参数已实现标定且保持不变，由式
-(\ref{X1}) (\ref{X2})，三维点在图像中的投影位置$h_{ij}$可表示为一个关于$C_i$和$X_j$的函数，记为
-\begin{equation}
-h_ij=h(C_i,X_j)
+\eqref{EQ1} \eqref{EQ2}，三维点在图像中的投影位置$h_{ij}$可表示为一个关于$C_i$和$X_j$的函数，记为
+\begin{equation}\label{EQ3}
+h_{ij}=h(C_i,X_j)
 \end{equation}
 V-SLAM算法需要将、对不同图像中对应于相同场景的图像点进行匹配，而这个过程是通过求解如下目标函数
-\begin{equation}
-\mathop{\arg\min}_{C_1,…C_m,X_1,…X_n} \sum_{i=1}^{m} {\sum_{j=1}^{n} \ \| \mathrm{h} (C_i,X_j)-\tilde{x_{ij}}\|_{\Sigma_{ij}}}
+\begin{equation}\label{EQ4}
+\mathop{\arg\min}_{C_1,…C_m,X_1,…X_n} \sum_{i=1}^{m} {\sum_{j=1}^{n} \ \| {h} (C_i,X_j)-\tilde{x_{ij}}\|_{\Sigma_{ij}}}
 \end{equation}
-
+得到一组最优的$C_1$，$C_2$…$C_m$,$X_1$,$X_2$ … $X_n$，使得所有$X_j$在$C_i$图像中的投影位置$h_{ij}$与观测到的图像点位置$x_{ij}$尽可能靠近，这里假设图像观测点符合高斯分布$x_{ij}$ $\sim$ $\mathrm{\textit{N}}$ ($\tilde{x_{ij}}$,$\Sigma_{ij}$)，$\|$ $e$ $\|$ =$e^{\mathrm{T}}$ $\Sigma^{-1}$ $e$
+求解目标函数\eqref{EQ4}的过程也成为集束调整（\textbf{bundle adjustment,BA}）,该最优化问题可利用线性方程的稀疏结构高效求解。
 \subsubsection{基于关键帧BA的单目V-SLAM系统}
 由于现阶段大多数AR产品都以智能手机以及平板电脑作为载体，而智能手机的摄像头大多以单目为主，双目、三目摄像头甚至深度摄像头都未得到普及，因此本文主要讨论基于单目视觉的同时定位与地图构建方法。
-目前，主流的V-SLAM方法主要为：基于滤波器、基于关键帧BA和基于直接跟踪，我们先来看看这三种方法。比较并分析其优劣，而后详细介绍基于关键帧BA的V-SLAM方法。
-
+目前，主流的V-SLAM方法主要为：基于滤波器、基于关键帧BA和基于直接跟踪，我们先来看看这三种方法。比较并分析其优劣，而后详细介绍基于关键帧BA的V-SLAM方法。其中比较具有代表性的有MonoSLAM以及MSCKF\\
+基于滤波器的V-SLAM的方法将系统每一时刻的状态\textit{t}用一个高斯概率模型表达，$x_t$$\sim$ $\mathrm{\textit{N}}$ ($\tilde{x_{t}}$,$\mathrm{\textit{P}}_{ij}$),其中$\tilde{x}_t$为当前时刻系统状态估计值，$P_t$为该估计值误差的协方差矩阵，系统状态由滤波器不断更新。\\
+而基于关键帧BA的V-SLAM方法是近年来最流行的方法之一，他的主要思想是将相机跟踪（Tracking）和地图构建（Mapping）作为两个独立的任务在两个线程并行执行，而Mapping线程仅维护视频流中抽取的关键帧。PTAM是最著名的基于关键帧BA的方法之一，也是我们介绍的重点\\
+基于直接跟踪的V-SLAM方法则是直接通过比较像素颜色来求解相机运动，具有代表性的算法有DTAM以及LSD-SLAM。
 \end{document}
