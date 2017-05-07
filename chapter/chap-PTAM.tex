@@ -10,18 +10,16 @@
 
 \chapter{基于单目相机的3维实时重建的PTAM算法介绍}
 
-\section{数学知识介绍}
 
 \section{PTAM算法的介绍}
 关键词，双管线系统，为后面的算法奠定了基础
 
-\section{PTAM算法的数学推导}
 我们首先简述PTAM实现单目相机SLAM的原理。单目相机模型不同于双目相机模型，实时追踪时相机视界中的点不能和其它相机视界中的点进行匹配，只能和自己的关键帧匹配，从而加大了3D重建中定位的难度。PTAM算法提出利用单目相机实时追踪特征点的可行性，实现三维重建。
 
-\subsection{PTAM算法工作的基本流程}
 PTAM算法主要思想是将Tracking和Mapping两个过程放在不同的管线(进程)中进行: Tracking 进程专门实现相机位置的估计，Mapping 进程则用于进行关键帧之间的误差消除。
 
-如果记$\itW$为真实世界的坐标系，PTAM算法将维护一个关键帧集合: $Img=\{I_1,I_2,\ldots,I_m\}$，这\(m\)个关键帧分别对应\(m\)个相机坐标系 $\itK_i$。我们用 $E_{\itK_i\itW}$ 表示从世界坐标系到相机坐标系的仿射变换(Affine Transformation)。
+\section{PTAM算法工作的基本流程}
+如果记$\itW$为真实世界的坐标系，PTAM算法将维护一个关键帧集合: $Img=\{I_1,I_2,\ldots,I_m\}$，这\(m\)个关键帧分别对应\(m\)个相机坐标系 $\itK_i$，以及一个三维重建的结果。我们用 $E_{\itK_i\itW}$ 表示从世界坐标系到相机坐标系的仿射变换(Affine Transformation)。
 
 \subsection{PTAM管线之一: Tracking}
 
@@ -70,13 +68,13 @@ E_{K_{t+1}\itW}  = T E_{K_{t}\itW} = exp(\mu) E_{K_{t}\itW}
 我们假定点$p$为我们需要定位的特征点，则我们首先需要在当前的关键帧图像中找到该点的新投影坐标$(\hat{u},\hat{v})$。为此，我们构造图像的尺度空间，利用 %\citep{}
 的FAST计算角点的方法提取可能的特征点。在假定相机移动很慢的情况下，特征点匹配算法从上一帧的位置开始，在一定的半径阈值内，在对应的视界空间上，依据设计好的评价函数(scoring function)进行搜索。
 算法会在搜索过程中得到一个坐标$(\hat{u},\hat{v})$，以及 $\sigma=2^l$ 作为视界空间金字塔中搜索对应的层数。在得到所有特征点的信息之后，算法求解以下的优化问题
-计算相机姿态的更新:
+计算相机姿态的更新(设$P_{t+1}$为当前特征点集合):
 
 \begin{equation}
-\underset{\mu}{argmin} \sum_{j=1}^{N} \psi( \frac{\lVert\mathbf{e}_j\rVert}{\sigma_j} , \sigma_T)
+\underset{\mu}{argmin} \sum_{j\in P_{t+1}} \psi( \frac{\lVert\mathbf{e}_j\rVert}{\sigma_j} , \sigma_T)
 \end{equation}
 \begin{equation}
-\mathbf{e}_j= (\hat{u},\hat{v})- f(exp(\mu)E_{K_{t}\itW} \mathbf{p_j})
+\mathbf{e}_j= (\hat{u_j},\hat{v_j})- f(exp(\mu)E_{K_{t}\itW} \mathbf{p_j})
 \end{equation}
 
 这里 $\psi$ 为 Tukey loss:
@@ -95,15 +93,25 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 \subsection{PTAM管线之二: Mapping}
 
 如图 %\autoref{??}
-所示在追踪进程持续运行的同时，映射进程会根据追踪进程估计的相机姿态，完成关键帧的选取及三维重建的主要任务。
+所示在追踪进程持续运行的同时，映射进程会根据追踪进程估计的相机姿态，完成关键帧的选取及三维重建的主要任务。为此，算法首先在初始化阶段，需要用户指定视频流中的两帧(第一帧一般为起始帧)，单独进行第一次特征点配对。这样做的目的有两个，一方面是为了利用五点法求解相机模型中的固有参数，另一方面是为了先定位特征点到三维空间中作为初始信息。
 
 \subsubsection{关键帧的选择和插入}
+在程序进程中，当视频流被读入之后，对于每一帧图像，算法需要判断是否需要把该帧图像加入关键帧集合。判断主要依据是距离上一关键帧的时间和预估的相机距离，以及图像的质量。在选定关键帧之后，根据追踪进程返回的信息，结合上一关键帧的对应特征点信息，定位深度，从而把特征点加入到三维重建模型中。
 
-\subsubsection{利用Bundle Adjustment极小化误差}
+\subsubsection{利用BA(Bundle Adjustment)校正}
+为了消除帧与帧之间的积累误差，映射进程还需要对整体进行一个调整，即所谓的BA。算法对于所有关键帧求解一次优化问题，也会对局部的几个特征点求解局部的优化问题，它们有以下形式:
+
+\begin{equation}
+\underset{\{\mu\},\{\mathbf{p}\}}{argmin} = \sum_{i=1}^{N} \sum_{j\in P_i} \psi(\frac{\lVert\mathbf{e}_j\rVert}{\sigma_j},\sigma_T)
+\end{equation}
+
+在完成校正之后，新的特征点的三维信息和关键帧信息将作为追踪进程的输入，循环使用。
+
 
 
 \section{PTAM算法的实际应用}
 \subsection{在一般电脑上运行}
+
 \subsection{在智能手机上运行}
 
 \section{PTAM算法的评价}
