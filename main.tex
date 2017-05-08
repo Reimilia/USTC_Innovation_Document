@@ -1,3 +1,4 @@
+
 \documentclass[bachelor,euler,twoside,openright]{ustcthesis}
 % 默认twoside 双面打印
 % 将master修改为bachelor, doctor or master
@@ -11,9 +12,11 @@
 
 %仅用于本示例文档中显示特殊字符串
 \usepackage{xltxtra}
+\usepackage{tikz,mathpazo}
+\usetikzlibrary{shapes.geometric, arrows}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 封面部分
+%% 封面部分\textsc{}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % 中文封面内容
@@ -104,12 +107,12 @@
 	%\ustcloaname{...}
 
 	% 表格索引
-	\ustclot
-	% 插图索引
-	\ustclof
+	%\ustclot
+	%% 插图索引
+	%\ustclof
 	%算法索引 
 	%如果需要使用算法环境并列出算法索引，请加入补充宏包。
-	\ustcloa
+	%\ustcloa
 	
 	% 摘要
 	\include{chapter/abstract}%此文件中含有中英文摘要
@@ -136,7 +139,7 @@
 	\ustcloa
 	
 	%符号说明，需要加入补充包
-	\include{chapter/denotation}%不是必需的，如果不想列出请注释掉
+	%\include{chapter/denotation}%不是必需的，如果不想列出请注释掉
 \fi
 \makeatother
 
@@ -148,6 +151,8 @@
   %\include{chapter/chap-intro}
   \include{chapter/chap-VSLAM}
   \include{chapter/chap-PTAM}
+
+  
   %\include{chapter/chap-guide}
   %\include{chapter/chap-example}
   %自行添加
@@ -161,16 +166,16 @@
   % 参考文献
   % 使用 BibTeX
   % 选择参考文献的排版格式。注意ustcbib这个格式不保证完全符合要求，请自行决定是否使用
-  %\bibliographystyle{ustcbib}%{GBT7714-2005NLang-UTF8}
-  %\bibliography{bib/tex}
+  \bibliographystyle{ustcbib}%{GBT7714-2005NLang-UTF8}
+  \bibliography{bib/tex}
   %\nocite{*} % for every item
   % 不使用 BibTeX
-  \include{chapter/bib}
+  %\include{chapter/bib}
 
   % 附录，没有请注释掉
-  \begin{appendix}
-    \include{chapter/chap-req}
-  \end{appendix}
+  %\begin{appendix}
+  %  \include{chapter/chap-req}
+  %\end{appendix}
 
   \makeatletter
   \ifustc@bachelor\relax\else

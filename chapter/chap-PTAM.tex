@@ -21,11 +21,10 @@ PTAM算法主要思想是将Tracking和Mapping两个过程放在不同的管线(
 \section{PTAM算法工作的基本流程}
 如果记$\itW$为真实世界的坐标系，PTAM算法将维护一个关键帧集合: $Img=\{I_1,I_2,\ldots,I_m\}$，这\(m\)个关键帧分别对应\(m\)个相机坐标系 $\itK_i$，以及一个三维重建的结果。我们用 $E_{\itK_i\itW}$ 表示从世界坐标系到相机坐标系的仿射变换(Affine Transformation)。
 
+
 \subsection{PTAM管线之一: Tracking}
 
-%
-% Todo: 插入一张流程图
-%
+
 追踪进程需要解决如下的问题：
 
 当读入了新的关键帧之后，原来算法在重建过程中提取的3维空间中的特征点现在在照片中的坐标是什么？现在的相机姿态应该怎么估计？ 
@@ -38,7 +37,7 @@ PTAM算法主要思想是将Tracking和Mapping两个过程放在不同的管线(
 \bfp_{jK_{t+1}}= E_{K_{t+1}\itW} \bfp_{j\itW}
 \end{equation}
 
-为了把三维空间中的视界投影到二维空间，算法遵循\citep{deng:01a}中的FOV相机模型，构建一个$\mathbb{R}^3$到 $\mathbb{R}^2$ 的映射为:
+为了把三维空间中的视界投影到二维空间，算法遵循\cite{Klein2007}中的FOV相机模型，构建一个$\mathbb{R}^3$到 $\mathbb{R}^2$ 的映射为:
 
 \begin{equation}
 \label{eq:FOV}
@@ -66,11 +65,20 @@ E_{K_{t+1}\itW}  = T E_{K_{t}\itW} = exp(\mu) E_{K_{t}\itW}
 
 
 我们假定点$p$为我们需要定位的特征点，则我们首先需要在当前的关键帧图像中找到该点的新投影坐标$(\hat{u},\hat{v})$。为此，我们构造图像的尺度空间，利用 %\citep{}
-的FAST计算角点的方法提取可能的特征点。在假定相机移动很慢的情况下，特征点匹配算法从上一帧的位置开始，在一定的半径阈值内，在对应的视界空间上，依据设计好的评价函数(scoring function)进行搜索。
-算法会在搜索过程中得到一个坐标$(\hat{u},\hat{v})$，以及 $\sigma=2^l$ 作为视界空间金字塔中搜索对应的层数。在得到所有特征点的信息之后，算法求解以下的优化问题
+的FAST-10\cite{Rosten2006}计算角点的方法提取可能的特征点。在假定相机移动很慢的情况下，特征点匹配算法从上一帧的位置开始，在一定的半径阈值内，在对应的视界空间上，依据设计好的评价函数(scoring function)进行搜索。
+算法会在搜索过程中得到一个坐标$(\hat{u},\hat{v})$，以及 $\sigma=2^l$ 作为视界空间金字塔中搜索对应的层数。
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=14cm]{PTAM01.pdf}
+\caption{视界空间中利用FAST提取特征点和搜索对应特征点示意图，左图表示视界空间的down sampling，以及基于FAST方法的特征点选取，右图为在对应的尺度空间中搜索对应的特征点}
+\label{fig:PTAM01}
+\end{figure}
+在得到所有特征点的信息之后，算法求解以下的优化问题
 计算相机姿态的更新(设$P_{t+1}$为当前特征点集合):
 
 \begin{equation}
+\label{eq:post_update}
 \underset{\mu}{argmin} \sum_{j\in P_{t+1}} \psi( \frac{\lVert\mathbf{e}_j\rVert}{\sigma_j} , \sigma_T)
 \end{equation}
 \begin{equation}
@@ -92,8 +100,7 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 
 \subsection{PTAM管线之二: Mapping}
 
-如图 %\autoref{??}
-所示在追踪进程持续运行的同时，映射进程会根据追踪进程估计的相机姿态，完成关键帧的选取及三维重建的主要任务。为此，算法首先在初始化阶段，需要用户指定视频流中的两帧(第一帧一般为起始帧)，单独进行第一次特征点配对。这样做的目的有两个，一方面是为了利用五点法求解相机模型中的固有参数，另一方面是为了先定位特征点到三维空间中作为初始信息。
+在追踪进程持续运行的同时，映射进程会根据追踪进程估计的相机姿态，完成关键帧的选取及三维重建的主要任务。为此，算法首先在初始化阶段，需要用户指定视频流中的两帧(第一帧一般为起始帧)，单独进行第一次特征点配对。这样做的目的有两个，一方面是为了利用五点法求解相机模型中的固有参数，另一方面是为了先定位特征点到三维空间中作为初始信息。
 
 \subsubsection{关键帧的选择和插入}
 在程序进程中，当视频流被读入之后，对于每一帧图像，算法需要判断是否需要把该帧图像加入关键帧集合。判断主要依据是距离上一关键帧的时间和预估的相机距离，以及图像的质量。在选定关键帧之后，根据追踪进程返回的信息，结合上一关键帧的对应特征点信息，定位深度，从而把特征点加入到三维重建模型中。
@@ -105,13 +112,95 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 \underset{\{\mu\},\{\mathbf{p}\}}{argmin} = \sum_{i=1}^{N} \sum_{j\in P_i} \psi(\frac{\lVert\mathbf{e}_j\rVert}{\sigma_j},\sigma_T)
 \end{equation}
 
-在完成校正之后，新的特征点的三维信息和关键帧信息将作为追踪进程的输入，循环使用。
+这里的计算将会采用Levenberg-Marquardt BA算法(详见\cite{Hartley2004})。在完成校正之后，新的特征点的三维信息和关键帧信息将作为追踪进程的输入，传入Tracking进程，两个进程在工作的时候将会保持相互的通信，这样最大程度上保证算法运行的流畅度。上述算法的核心过程，在下方\autoref{fig:PTAM_process}中进行了简要的总结。
+
+\newpage
+% 流程图定义基本形状
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black ] %, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black ]%,fill=blue!30]
+\tikzstyle{process} = [rectangle, text width=3cm ,minimum width=3cm, minimum height=1cm, text centered, draw=black]%,fill=orange!30]
+\tikzstyle{smallprocess} = [rectangle, text width=2cm ,minimum width=2cm, minimum height=1cm, text centered, draw=black]%,fill=orange!30]
+\tikzstyle{decision} = [diamond, aspect=2.5, minimum width=1cm, minimum height=1cm, text centered, draw=black]%,fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[node distance=2cm]
+
+%定义流程图具体形状
+\node (Tstart) [startstop] {Tracking};
+\node (in1) [process, below of=Tstart] {接收Mapping进程的信息};
+\node (pro1) [process, below of=in1] {提取当前帧特征点};
+\node (pro2) [process, below of=pro1] {投影匹配特征点};
+\node (pro3) [process, below of=pro2] {根据\autoref{eq:post_update}求解相机姿态变化};
+%\node (out1) [io, below of=pro2a] {Output};
+%\node (stop) [startstop, below of=out1] {Stop};
 
 
 
-\section{PTAM算法的实际应用}
+\node (Mstart) [startstop, right of= Tstart, xshift=7cm] {Mapping};
+\node (stereo) [process, above of = Mstart] {初始化};
+\node (Mpro1)  [process, below of = Mstart] {关键帧判定与添加};
+\node (Mdec1)  [decision, below of = Mpro1, yshift=-0.6cm] {是否全局收敛};
+\node (Mpro2)  [smallprocess, left of = Mdec1, xshift=-2cm] {全局BA};
+\node (Mdec2)  [decision, below of = Mdec1, yshift=-0.8cm] {是否局部收敛};
+\node (Mpro3)  [smallprocess,left of =Mdec2, xshift=-2cm] {局部BA};
+\node (Mpro4)  [process, below of =Mdec2] {更新关键帧和3维重建信息};
+%连接具体形状
+\draw [arrow](Tstart) -- (in1);
+\draw [arrow](in1) -- (pro1);
+\draw [arrow](pro1) -- (pro2);
+%\draw [arrow](dec1) -- (pro2a);
+%\draw [arrow](dec1) -- (pro2b);
+%\draw [arrow](dec1) -- node[anchor=east] {yes} (pro2a);
+%\draw [arrow](dec1) -- node[anchor=south] {no} (pro2b);
+\draw [arrow](pro2) -- (pro3);
+%\draw [arrow](pro2a) -- (out1);
+%\draw [arrow](out1) -- (stop);
+\draw [arrow](pro3) |- +(-2.5,-1) |- (in1);
+\draw [arrow](stereo) -- (Mstart);
+\draw [arrow](Mstart) -- (Mpro1);
+\draw [arrow](Mpro1) -- (Mdec1);
+
+\draw [arrow](Mdec1) -- node[anchor=south] {否} (Mpro2);
+\draw [arrow](Mdec1) -- node[anchor=west] {是} (Mdec2);
+\draw [arrow](Mdec2) -- node[anchor=west] {是} (Mpro4);
+\draw [arrow](Mdec2) -- node[anchor=south] {否} (Mpro3);
+
+\draw [arrow](Mpro2) |- +(0,-1.3) -- +(4,-1.3) -- (Mdec2);
+\draw [arrow](Mpro3) |- (Mpro4);
+
+\draw [arrow](Mpro4) -| +(2.5,1) |- (Mpro1);
+
+\draw [arrow](in1) -- node[anchor=north] {匹配特征点对，相机姿态估计} (Mpro1);
+\draw [arrow](Mpro1) -- node[anchor=south] {关键帧信息，三维重建模型} (in1);
+
+\end{tikzpicture}
+
+\caption{基于BA的单目经典算法PTAM的流程示意图}
+\label{fig:PTAM_process}
+
+\end{figure}
+
+
+\section{PTAM算法的实际效果}
+
+本节重点比较和讨论对于PTAM算法运行效果的评价。
+
 \subsection{在一般电脑上运行}
+
+在一般的笔记本电脑上运行的结果，如下图所示。对于开放的场景(如寝室内部)，实际测试中帧率几乎达不到30帧/秒，能够在20帧每秒的情况也比较少见。对于特定的平面场景(如桌面)，实际测试结果。
 
 \subsection{在智能手机上运行}
 
-\section{PTAM算法的评价}
+智能手机的性能会是制约此类算法在手机上表现的一个重要因素，\cite{Klein2009}中尝试把PTAM的系统移植到Iphone中，得到了\autoref{fig:PTAMcell01}所示的结果。
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=12cm]{PTAMcell01.pdf}
+\caption{在智能手机上运行的结果，(a)图为起始状态，(b)图表现了特征点的追踪，(c)图表示了在运动过程中的平面捕捉与AR渲染。由于手机运算能力限制，特征点数量较PC端大幅减少}
+\label{fig:PTAMcell01}
+\end{figure}
+
+
+\subsection{PTAM算法的评价}
