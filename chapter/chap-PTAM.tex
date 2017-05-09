@@ -10,7 +10,7 @@
 
 \chapter{基于BA的单目相机实时重建的经典算法(PTAM)介绍}
 
-本章节将重点讨论基于BA的单目相机实时重建经典算法:PTAM。该算法是基于关键帧特征和BA的稀疏重建算法的开山鼻祖，具有重要的意义。
+本章节将重点讨论并实现基于BA的单目相机实时重建经典算法:PTAM。该算法是基于关键帧特征和BA的稀疏重建算法的开山鼻祖，具有重要的意义。
 
 \section{PTAM算法的介绍}
 首先我们将简述PTAM\cite{Klein2007}(Parallel Tracking and Mapping)实现单目相机SLAM的原理。单目相机模型(Monocular SLAM)不同于多目相机模型，实时追踪时相机视界中的点不能和其它相机视界中的点进行匹配或者实现三角定位，只能和自己的关键帧匹配，从而加大了3D重建中定位(即深度信息求解)的难度。一般的PTAM算法首次提出利用双线程，将全局BA和相机姿态估计这两个任务分离，从而大幅提高了计算效率，使得单目相机实时追踪特征点，实现三维重建成为可能。
@@ -188,11 +188,23 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 
 \subsection{在一般电脑上运行}
 
-在一般的笔记本电脑上运行的结果，如下图所示。对于开放的场景(如寝室内部)，实际测试中帧率几乎达不到30帧/秒，能够在20帧每秒的情况也比较少见。对于特定的平面场景(如桌面)，实际测试结果。
+我们实现了PTAM在Win10 32bit, openCV 3.2, VS2015的实际环境下，利用笔记本摄像头或者与手机摄像头相连的方式，在一般的笔记本电脑上运行的成果，运行的实际效果如下图所示。对于开放的场景(如寝室内部)，实际测试中十分卡顿，掉帧严重，且追踪能力不强。对于特定的平面场景(如桌面)，实际测试结果(例如\autoref{fig:PTAMrun})也不近如人意，虽然有时会正确侦测到平面并完成渲染，但有时三维重建和平面的探测结果非常奇怪，十分不鲁棒。。且初始化的stereo init非常依赖初值，可能需要$1\sim5$秒的时间
+
+\begin{figure}[!htbp]
+\centering 
+\subfloat[实际场景追踪]{
+\includegraphics[width=4.5cm]{PTAMrun01.png}}
+\subfloat[平面探测与AR渲染]{
+\includegraphics[width=4.5cm]{PTAMrun02.png}}
+\subfloat[稀疏三维地图重建]{
+\includegraphics[width=4.5cm]{PTAMrun03.png}}
+\caption{PTAM在电脑上实际运行的效果}
+\label{fig:PTAMrun}
+\end{figure}
 
 \subsection{在智能手机上运行}
 
-智能手机的性能会是制约此类算法在手机上表现的一个重要因素，\cite{Klein2009}中尝试把PTAM的系统移植到Iphone中，得到了\autoref{fig:PTAMcell01}所示的结果。
+智能手机的性能会是制约此类算法在手机上表现的一个重要因素，\cite{Klein2009}中尝试把PTAM的系统移植到Iphone中，得到了\autoref{fig:PTAMcell01}所示的结果。我们虽然并未实现该算法，但可以预见该算法在手机上的运算效率并不会很高。
 
 \begin{figure}[!htbp]
 \centering
@@ -200,6 +212,3 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 \caption{在智能手机上运行的结果，(a)图为起始状态，(b)图表现了特征点的追踪，(c)图表示了在运动过程中的平面捕捉与AR渲染。由于手机运算能力限制，特征点数量较PC端大幅减少}
 \label{fig:PTAMcell01}
 \end{figure}
-
-
-\subsection{PTAM算法的评价}
