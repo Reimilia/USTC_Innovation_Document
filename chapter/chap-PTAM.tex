@@ -8,7 +8,7 @@
 \def \itK{\mathit{K}}
 \def \bfp{\mathbf{p}}
 
-\chapter{单目相机实时重建的经典算法：PTAM介绍}
+\chapter{基于BA的单目相机实时重建的经典算法(PTAM)介绍}
 
 本章节将重点讨论基于BA的单目相机实时重建经典算法:PTAM。该算法是基于关键帧特征和BA的稀疏重建算法的开山鼻祖，具有重要的意义。
 
@@ -84,7 +84,7 @@ E_{K_{t+1}\itW}  = T E_{K_{t}\itW} = exp(\mu) E_{K_{t}\itW}
 \mathbf{e}_j= (\hat{u_j},\hat{v_j})- f(exp(\mu)E_{K_{t}\itW} \mathbf{p_j})
 \end{equation}
 
-这里 $\psi$ 为 Tukey loss:
+这里 $\psi$ 为 Tukey loss\cite{A86robuststatistics}:
 
 \begin{equation}
 \psi(x,c)= 
