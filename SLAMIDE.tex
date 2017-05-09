@@ -1,0 +1,57 @@
+\documentclass[12pt]{article}
+\usepackage{CJK}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{cellspace}
+\usepackage{amssymb}
+\usepackage{CJK}
+
+\pagestyle{plain}
+
+\begin{document}
+\begin{CJK}{GBK}{kai}
+\section{动态环境中的SLAM算法介绍}
+实际应用中我们可能会遇到对于拍摄的物体有运动的情况，此时我们首先要区分出静态物体和动态物体，进一步再刻画两者的位置关系，两者的位置需要交错迭代来确认。另外为了提高位置的准确性，我们还需要提供标定点来给相机参考$[\underline{Simultaneous localization and mapping with detection and tracking of moving objects,Chieh-Chih Wang, C. Thorpe}]$，或由相机位置计算出标定点$[\underline{Online simultaneous localization and mapping with detection and tracking of moving objects: Theory and results from a ground vehicle in crowded urhan areas}, Chieh-Chih Wang,S. Thrun]$，这里我们采用角落作为标定点。过程中使用两个集合$S$和$D$，分别表示格点被静态部分和动态部分占用的概率，$S \cup D$ 则可表示出可推测部分的概率。当$S$或$D$中的某一个对应概率超过$0.9$时,我们认为该位置是可以确定的。
+\subsection{物体类型的映射的迭代}
+记 $o_t$ 为 $t$ 时刻物体位置的深度信息，则我们希望求出 $P(S_t|o_1,…,o_t)$, $P(D_t|o_1,…,o_t)$。 为了得到迭代过程，我们期望$P(S_t)$ 和 $P(D_t)$ 依赖于 $S_{t-1}, D_{t-1}$, 而由于$D_{t-1}$ 中信息会发生变化，我们在迭代过程中不利用$D_{t-1}$ 中的信息。即我们希望求出 $P(S_t|o_1,…,o_t,S_{t-1})$, $P(D_t|o_1,…,o_t,S_{t-1})$.
+\subsection{映射集S的迭代}
+利用Bayes 公式, 可以得到
+\begin{equation*}
+P(S_t|o_1,\cdots,o_t,S_{t-1}) = \dfrac{P(o_t|o_1,\cdots,o_{t-1},S_{t-1},S_t)P(S_t|o_1,\cdots,o_{t-1},S_{t-1})}{P(o_t|o_1,\cdots,o_{t-1},S_{t-1})}
+\end{equation*}
+在 $P(o_t|o_1,\cdots,o_{t_1},S_{t_1},S_t)$ 中，我们考虑 $S_{t-1}, S_{t}$ 已经包含了 $\{o_1,\cdots，o_t\}$ 中的所有信息，即 $P(o_t|o_1,\cdots,o_{t-1},S_{t-1},S_t) = P(o_t|S_{t-1},S_t)$，再次利用Bayes 公式，可得
+\begin{equation*}
+P(S_t|o_1,\dots,o_t,S_{t-1}) = \dfrac{P(S_t|o_t,S_{t-1})P(o_t|S_{t-1})P(S_t|o_1,\cdots,o_{t-1},S_{t-1})}{P(S_t|S_{t-1})P(o_t|o_1,\cdots,o_{t-1},S_{t-1})}
+\end{equation*}
+类似可以求出$S$未占据格点个条件概率$P(\widetilde{S})$,
+\begin{equation*}
+P(\widetilde{S_t}|o_1,\dots,o_t,S_{t-1}) = \dfrac{P(\widetilde{S_t}|o_t,S_{t-1})P(o_t|S_{t-1})P(\widetilde{S_t}|o_1,\cdots,o_{t-1},S_{t-1})}{P(\widetilde{S_t}|S_{t-1})P(o_t|o_1,\cdots,o_{t-1},S_{t-1})}
+\end{equation*}
+上两式相除，可得
+\begin{equation*}
+\dfrac{P(S_t|o_1,\dots,o_t,S_{t-1})}{P(\widetilde{S_t}|o_1,\dots,o_t,S_{t-1})} = \dfrac{P(S_t|o_t,S_{t-1})}{P(\widetilde{S_t}|o_t,S_{t-1})}\dfrac{P(\widetilde{S_t}|S_{t-1})}{P(S_t|S_{t-1})}\dfrac{P(S_t|o_1,\cdots,o_{t-1},S_{t-1})}{P(\widetilde{S_t}|o_1,\cdots,o_{t-1},S_{t-1})}
+\end{equation*}
+由于$P(S) = 1 - P(S')$, 上式可写为
+\begin{equation*}
+\dfrac{P(S_t|o_1,\dots,o_t,S_{t-1})}{1-P({S_t}|o_1,\dots,o_t,S_{t-1})} = \dfrac{P(S_t|o_t,S_{t-1})}{1-P({S_t}|o_t,S_{t-1})}\dfrac{1-P({S_t}|S_{t-1})}{P(S_t|S_{t-1})}\dfrac{P(S_t|o_1,\cdots,o_{t-1},S_{t-1})}{1-P({S_t}|o_1,\cdots,o_{t-1},S_{t-1})}
+\end{equation*}
+由于$P(S_t|S_{t-1})$ 不依赖于$t$, 可记为 $P(S)$, 另外，由于$S^t$ 在给定 $o_1,\cdots,o_{t-1},S_{t-1}$时，不发生改变，因此上式可写为
+\begin{equation*}
+\dfrac{P(S_t|o_1,\dots,o_t,S_{t-1})}{1-P({S_t}|o_1,\dots,o_t,S_{t-1})} = \dfrac{P(S_t|o_t,S_{t-1})}{1-P({S_t}|o_t,S_{t-1})}\dfrac{1-P(S)}{P(S)}\dfrac{P(S_{t-1})}{1-P(S_{t-1})}
+\end{equation*}
+为便于计算，上式中取$P(S) = 0.5$，可得
+\begin{equation*}
+\dfrac{P(S_t|o_1,\dots,o_t,S_{t-1})}{1-P({S_t}|o_1,\dots,o_t,S_{t-1})} = \dfrac{P(S_t|o_t,S_{t-1})}{1-P({S_t}|o_t,S_{t-1})}\dfrac{P(S_{t-1})}{1-P(S_{t-1})}
+\end{equation*}
+上式即可完成迭代过程。
+\subsection{映射集D的迭代}
+类似于$S$的计算过程，我们可以得到
+\begin{equation*}
+\dfrac{P(D_t|o_1,\dots,o_t,S_{t-1})}{1-P({D_t}|o_1,\dots,o_t,S_{t-1})} = \dfrac{P(D_t|o_t,S_{t-1})}{1-P({D_t}|o_t,S_{t-1})}\dfrac{P(D_{t-1})}{1-P(D_{t-1})}
+\end{equation*}
+由于$D$中的物体会随时间变化，迭代过程不需要依赖于$D_{t-1}$, 计算时也不需要考虑 $D$ 中的过去值，而只需要考虑当前的$t$ 来计算当前移动物体的位置情况。仅当$P(S_{t-1})$未确定且$P{o_t}$较大时，$P(D_t)$ 会有较大的取值。$[\underline{Mobile Robot Simultaneous Localization and Mapping in Dynamic Environments,DENIS F. WOLF AND GAURAV S. SUKHATME}]$
+\subsection{定位}
+由于动态物体位置的确认依赖于原来区域的选取，因此静态位置误差会导致对动态物体估计的误差。位置标定的方法有很多种算法，如我们下面使用的地标法。若对环境有预先的信息，则这里可以在给定的信息中得到标定点，否则，要同时利用相机位置和图片信息$[\underline{A Solution to the Simultaneous Localization and Map Building (SLAM) Problem, Dissanayake}]$, 可以选取角作为标定点$[\underline{Detection and Tracking of Point Features,(Tomasi and Kanade}]$，为了避免标定点的相似影响结果，还需要相机的位置来辅助确定位置，并删去最近的标定点。这里除了上述的两种格点映射集，我们还需要第三类映射集来储存标定点的位置。同样，标定点位置可能会被动态物体影响，特别是将动态物体设置为标定点时，因此必须区分出静态标定点。我们在选取标定点时，必要的要从S中大概率的点来选取。
+
+\end{CJK}
+\end{document}

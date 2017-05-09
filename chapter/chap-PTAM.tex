@@ -8,13 +8,12 @@
 \def \itK{\mathit{K}}
 \def \bfp{\mathbf{p}}
 
-\chapter{基于单目相机的3维实时重建的PTAM算法介绍}
+\chapter{单目相机实时重建的经典算法：PTAM介绍}
 
+本章节将重点讨论基于BA的单目相机实时重建经典算法:PTAM。该算法是基于关键帧特征和BA的稀疏重建算法的开山鼻祖，具有重要的意义。
 
 \section{PTAM算法的介绍}
-关键词，双管线系统，为后面的算法奠定了基础
-
-我们首先简述PTAM实现单目相机SLAM的原理。单目相机模型不同于双目相机模型，实时追踪时相机视界中的点不能和其它相机视界中的点进行匹配，只能和自己的关键帧匹配，从而加大了3D重建中定位的难度。PTAM算法提出利用单目相机实时追踪特征点的可行性，实现三维重建。
+首先我们将简述PTAM\cite{Klein2007}(Parallel Tracking and Mapping)实现单目相机SLAM的原理。单目相机模型(Monocular SLAM)不同于多目相机模型，实时追踪时相机视界中的点不能和其它相机视界中的点进行匹配或者实现三角定位，只能和自己的关键帧匹配，从而加大了3D重建中定位(即深度信息求解)的难度。一般的PTAM算法首次提出利用双线程，将全局BA和相机姿态估计这两个任务分离，从而大幅提高了计算效率，使得单目相机实时追踪特征点，实现三维重建成为可能。
 
 PTAM算法主要思想是将Tracking和Mapping两个过程放在不同的管线(进程)中进行: Tracking 进程专门实现相机位置的估计，Mapping 进程则用于进行关键帧之间的误差消除。
 
@@ -106,7 +105,7 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 在程序进程中，当视频流被读入之后，对于每一帧图像，算法需要判断是否需要把该帧图像加入关键帧集合。判断主要依据是距离上一关键帧的时间和预估的相机距离，以及图像的质量。在选定关键帧之后，根据追踪进程返回的信息，结合上一关键帧的对应特征点信息，定位深度，从而把特征点加入到三维重建模型中。
 
 \subsubsection{利用BA(Bundle Adjustment)校正}
-为了消除帧与帧之间的积累误差，映射进程还需要对整体进行一个调整，即所谓的BA。算法对于所有关键帧求解一次优化问题，也会对局部的几个特征点求解局部的优化问题，它们有以下形式:
+为了消除帧与帧之间的积累误差，映射进程还需要对整体的投影误差和进行一个优化，即所谓的BA。算法对于所有关键帧求解一次优化问题，也会对局部的几个特征点求解局部的优化问题，它们有以下形式:
 
 \begin{equation}
 \underset{\{\mu\},\{\mathbf{p}\}}{argmin} = \sum_{i=1}^{N} \sum_{j\in P_i} \psi(\frac{\lVert\mathbf{e}_j\rVert}{\sigma_j},\sigma_T)
@@ -145,7 +144,7 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 \node (Mpro2)  [smallprocess, left of = Mdec1, xshift=-2cm] {全局BA};
 \node (Mdec2)  [decision, below of = Mdec1, yshift=-0.8cm] {是否局部收敛};
 \node (Mpro3)  [smallprocess,left of =Mdec2, xshift=-2cm] {局部BA};
-\node (Mpro4)  [process, below of =Mdec2] {更新关键帧和3维重建信息};
+\node (Mpro4)  [process, below of =Mdec2] {更新关键帧和深度信息};
 %连接具体形状
 \draw [arrow](Tstart) -- (in1);
 \draw [arrow](in1) -- (pro1);
@@ -185,7 +184,7 @@ x(1-\frac{x^2}{c^2}) & \text{for }|x|<c \\
 
 \section{PTAM算法的实际效果}
 
-本节重点比较和讨论对于PTAM算法运行效果的评价。
+本节重点比较和讨论对于PTAM算法运行效果。
 
 \subsection{在一般电脑上运行}
 
