@@ -1,0 +1,107 @@
+\begin{thebibliography}{10}
+
+\bibitem{Hartley2004}
+Hartley R~I, Zisserman A.
+\newblock Multiple View Geometry in Computer Vision.
+\newblock Second ed., Cambridge University Press, ISBN: 0521540518, 2004
+\unskip.
+
+\bibitem{TriggsB.HartleyR.I.FitzgibbonA.W.2000}
+{Triggs B Hartley R I , Fitzgibbon A W} M~P~F.
+\newblock {Bundle Adjustment — A Modern Synthesis}.
+\newblock Vision Algorithms '99, 2000, 34099:298--372
+\unskip.
+
+\bibitem{刘浩敏2016基于单目视觉的同时定位与地图构建方法综述}
+刘浩敏, 章国锋, 鲍虎军.
+\newblock 基于单目视觉的同时定位与地图构建方法综述.
+\newblock 计算机辅助设计与图形学学报, 2016, 28(6):855--868
+\unskip.
+
+\bibitem{Klein2007}
+Klein G, Murray D.
+\newblock {Parallel tracking and mapping for small AR workspaces}.
+\newblock 2007 6th IEEE and ACM International Symposium on Mixed and Augmented
+  Reality, ISMAR, 2007.
+\unskip.
+
+\bibitem{Rosten2006}
+Rosten E, Drummond T.
+\newblock {Machine learning for high-speed corner detection}.
+\newblock Lecture Notes in Computer Science (including subseries Lecture Notes
+  in Artificial Intelligence and Lecture Notes in Bioinformatics), 2006, 3951
+  LNCS:430--443
+\unskip.
+
+\bibitem{A86robuststatistics}
+A C~P, B A~A, A H~K, et~al.
+\newblock Robust Statistics, 1986
+\unskip.
+
+\bibitem{Klein2009}
+Klein G, Murray D.
+\newblock {Parallel tracking and mapping on a camera phone}.
+\newblock Proceedings of Science and Technology Proceedings - IEEE 2009
+  International Symposium on Mixed and Augmented Reality, ISMAR 2009, 2009.
+\newblock  83--86
+\unskip.
+
+\bibitem{Mur-Artal2015}
+Mur-Artal R, Montiel J~M~M, Tardos J~D.
+\newblock {ORB-SLAM: A Versatile and Accurate Monocular SLAM System}.
+\newblock IEEE Transactions on Robotics, 2015, 31(5):1147--1163
+\unskip.
+
+\bibitem{Strasdat2011}
+Strasdat H, Davison A~J, Montiel J~M~M, et~al.
+\newblock {Double window optimisation for constant time visual SLAM}.
+\newblock Proceedings of the IEEE International Conference on Computer Vision,
+  2011. 2352--2359
+\unskip.
+
+\bibitem{Galvez-Lopez2012}
+G{\'{a}}lvez-L{\'{o}}pez D, Tard{\'{o}}s J~D.
+\newblock {Bags of binary words for fast place recognition in image sequences}.
+\newblock IEEE Transactions on Robotics, 2012, 28(5):1188--1197
+\unskip.
+
+\bibitem{wang2002simultaneous}
+Wang C~C, Thorpe C.
+\newblock Simultaneous localization and mapping with detection and tracking of
+  moving objects.
+\newblock Proceedings of Robotics and Automation, 2002. Proceedings. ICRA'02.
+  IEEE International Conference on, volume~3. IEEE, 2002.
+\newblock  2918--2924
+\unskip.
+
+\bibitem{wang2003online}
+Wang C~C, Thorpe C, Thrun S.
+\newblock Online simultaneous localization and mapping with detection and
+  tracking of moving objects: Theory and results from a ground vehicle in
+  crowded urban areas.
+\newblock Proceedings of Robotics and Automation, 2003. Proceedings. ICRA'03.
+  IEEE International Conference on, volume~1. IEEE, 2003.
+\newblock  842--849
+\unskip.
+
+\bibitem{wolf2005mobile}
+Wolf D~F, Sukhatme G~S.
+\newblock Mobile robot simultaneous localization and mapping in dynamic
+  environments.
+\newblock Autonomous Robots, 2005, 19(1):53--65
+\unskip.
+
+\bibitem{dissanayake2001solution}
+Dissanayake M~G, Newman P, Clark S, et~al.
+\newblock A solution to the simultaneous localization and map building (SLAM)
+  problem.
+\newblock IEEE Transactions on robotics and automation, 2001, 17(3):229--241
+\unskip.
+
+\bibitem{tomasi1991detection}
+Tomasi C, Kanade T.
+\newblock Detection and tracking of point features.
+\newblock 1991.
+\unskip.
+
+\end{thebibliography}

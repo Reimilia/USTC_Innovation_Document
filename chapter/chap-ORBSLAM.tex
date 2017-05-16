@@ -33,6 +33,23 @@ ORB-SLAM基本延续了 PTAM 的算法框架,但对框架中的大部分组件�
 (4)PTAM扩展场景时也要求新加入的关键帧提供足够的视差，导致场景往往难以扩展。ORB-SLAM采用一种更鲁棒的关键帧和三维点的选择机制——先用宽松的判断条件尽可能及时地加入新的关键帧和三维点，以保证后续帧的鲁棒跟踪，再用严格的判断条件删除冗余的关键帧和不稳定的三维点, 以保证 BA 的效率和精度。
 
 总之，ORB在理论开创性方面远不及PTAM，然而ORB也绝不仅仅是PTAM添加了loop closure模块并替换图像特征为ORB而已。它吸收了近几年monoslam领域的很多理论成果，比如逆深度的使用，g2o工具箱的优化等。
+
+但是ORB-SLAM相较于PTAM算法来说，它的效果已经比PTAM好多了，\autoref{fig:ORBSLAM2}和\autoref{fig:ORBSLAM3}就是我们实际运行ORB-SLAM得到的效果图。可以发现无论是在稳定性和重建规模，以及对于闭环的检测上，ORB-SLAM都优于PTAM，有了一个非常显著的改进。
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=10cm]{ORBSLAM1.pdf}
+\caption{ORB-SLAM实际关键帧检测示意}
+\label{fig:ORBSLAM2}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=10cm]{ORBSLAM2.pdf}
+\caption{ORB-SLAM实际稀疏三维重建示意}
+\label{fig:ORBSLAM3}
+\end{figure}
+
+
 \section{ORB-SLAM方法在家具设计与增强现实中的应用构想}
 知名家居公司宜家(Ikra)于2014年推出了增强现实app，可以通过扫描目录页，而后把产品目录放在想要摆放家具的位置上，而后就可以在自己的手机或者平板电脑的屏幕上看到用户想要看到的家具放在自己家里的模样，其效果图如\autoref*{fig:yijia_app}所示。这种把家具拉出来与实际的居家环境结合的增强现实技术，带给了使用者更好的购物体验，而这也给宜家带来了巨大的收益。
 
